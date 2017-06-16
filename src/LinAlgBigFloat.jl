@@ -6,4 +6,6 @@ module LinAlgBigFloat
 include("hessenbergbf.jl")
 include("schurbf.jl")
 
+export is_hessenberg
+
 end # module

@@ -98,3 +98,25 @@ function eig2(A::AbstractMatrix)
   end
 end
 
+"""
+
+  `is_hessenberg(::AbstractMatrix) -> bool`
+
+  Test if matrix is exact Hessenberg form.
+  No square matrix required.
+  (Below subdiagonal exact zero except optional spike column)
+"""
+function is_hessenberg(A::AbstractMatrix, ispike::Integer = 0)
+  n, m = size(A)
+  for k = 1:m
+    if k != ispike
+      for i = k+2:n
+        if A[i,k] != 0
+          return false
+        end
+      end
+    end
+  end
+  true
+end
+

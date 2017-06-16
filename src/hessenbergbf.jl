@@ -1,6 +1,6 @@
 
 # reimplements methods: hessfact, hessfact!
-# and minor functions form LinAlg: full, A_mul_B! ..., reflectorApply! 
+# and minor functions from LinAlg: full, A_mul_B! ..., reflectorApply! 
 
 import Base.LinAlg
 import Base: A_mul_B!, Ac_mul_B!, A_mul_Bc!, copymutable, full
@@ -48,7 +48,12 @@ function gehrd!{T<:BigFloatOrComplex}(ilo::Integer, ihi::Integer, A::StridedMatr
 end
 
 """
-Apply reflector from left or right, analogous to linalg/generic.jl.
+  
+  `reflectorApply!(x::AbstractVector, τ::Number, A::StridedMatrix)`
+  `reflectorApply!(A::StridedMatrix, x::AbstractVector, τ::Number)`
+
+Apply reflector `x, τ` from left or right to matrix `A`, see `linalg/generic.jl`.
+Matrix is modified by this operation.
 """
 function reflectorApply!(A::StridedMatrix, x::AbstractVector, τ::Number)
   n, m = size(A)
