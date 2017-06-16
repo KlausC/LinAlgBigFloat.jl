@@ -1,5 +1,9 @@
+"""
+Module providing extensions of linalg to BigFloat and Complex{BigFloat}
+"""
 module LinAlgBigFloat
 
-# package code goes here
+include("hessenbergbf.jl")
+include("schurbf.jl")
 
 end # module
