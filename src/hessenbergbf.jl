@@ -12,7 +12,6 @@ import Base.LinAlg.LAPACK: gehrd!
 
 include("util.jl")
 include("separate.jl")
-include("refineprecision.jl")
 include("deflationcrit.jl")
 include("transformhess.jl")
 

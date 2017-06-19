@@ -1,4 +1,6 @@
 
+include("refineprecision.jl")
+
 import Base.LinAlg.schurfact!
 import Base.getindex
 
