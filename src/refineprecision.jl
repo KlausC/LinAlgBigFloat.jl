@@ -17,9 +17,18 @@ Refine all eigenvalues of a list close to estimation value
 function refineprecision!{T<:Union{Real,Complex}}(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractM, ev::AbstractVector)
   
   realcase = T <: Real
-  for evk in reverse(ev)
+  evr = reverse(ev)
+  k = length(ev)
+  while k >= 1
+    evk = ev[k]
     evk2 = ! realcase || isreal(evk) ? T(evk) : Complex{T}(evk)
+
+    ihi0 = ihi
     ihi = refineprecision!(A, ilo, ihi, Q, evk)
+    if ihi0 - ihi >= 2 && k > 1 && imag(evk) == -imag(ev[k-1])
+      k -= 1
+    end
+    k -= 1
   end
   ihi
 end
@@ -29,7 +38,7 @@ Refine one eigenvalue close to estimation value
 """
 function refineprecision!{T<:Union{Real,Complex}}(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractM, ev::Number)
  
-  ih2 = ! (T <: Real) || isreal(ev) ? ihi : max(ihi - 1, ilo)
+  ih2 = ! (T <: Real) || isreal(ev) ? ihi : ihi - 1
   r = ih2:ihi
   while !converged(A, ilo, ihi)
     transform_Hess!(A, ilo, ihi, Q, [ev], ihi, 0)

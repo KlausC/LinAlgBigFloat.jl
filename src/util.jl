@@ -3,7 +3,7 @@ import Base: A_mul_Bc!, A_mul_B!, (*)
 import Base: getindex, setindex!
 
 type Dummy end
-typealias AbstractM Union{AbstractMatrix, LinAlg.AbstractRotation, Dummy}
+AbstractM  = Union{AbstractMatrix, LinAlg.AbstractRotation, Dummy}
 
 """
 Add missing multiplication to LinAlg.Rotation
@@ -120,3 +120,64 @@ function is_hessenberg(A::AbstractMatrix, ispike::Integer = 0)
   true
 end
 
+"""
+Finish up to standardized 2x2 diagonal blocks
+"""
+function finish!(A::AbstractMatrix, Q::AbstractM)
+  n = size(A, 1)
+  for k = 1:n-1
+    if A[k+1,k] != 0
+      r = k:k+1
+      AA, G = givens1(A, k, k+1)
+      A_mul_B!(G, view(A, :, k+1:n))
+      A_mul_Bc!(view(A, 1:k-1, :), G)
+      A_mul_Bc!(Q, G)
+      A[r,r] = AA
+      # println("finish($k:$(k+1))")
+      # display(@view A[k:k+1,k:k+1])
+      # display(AA)
+    end
+  end
+end
+
+"""
+Set elements of matrix to zero, which should be, but are not due to numerical errors.
+"""
+@inline function reschur!(A::AbstractMatrix, k::Integer)
+  A[k+1:end,1:k] = 0
+end
+
+"""
+Produce Givens Rotation, which transforms 2x2 matrix to another 2x2 matrix with
+either: subdiagonal zero if 2 real eigenvalues.
+The eigenvalue of lowest absolute value is placed in lower right position.
+or: equal diagonal elements if 2 non-real complex eigenvalues.
+The lower left element is <= upper right element absolutely.
+"""
+function givens1{T<:Number}(A::AbstractMatrix{T}, i1::Integer, i2::Integer)
+  a, b, x, d = A[i1,i1], A[i1,i2], A[i2,i1], A[i2,i2]
+  btx = b * x
+  apd = ( a + d ) / 2
+  bpx = ( b + x ) / 2
+  da  = ( d - a ) / 2
+  disc = da ^ 2 + btx
+  if disc >= 0
+    root = sqrt( disc )
+    root = copysign(root, apd)
+    e1 = apd + root
+    e2 = ( a * d - btx ) / e1
+    ea = a - e2
+    ed = d - e2
+    G, r = abs(b) + abs(ed) > abs(b) + abs(ea) ? givens(b, ed, i1, i2) : givens(ea, x, i1, i2)
+    v = 2( da * G.c - bpx * G.s) * G.s + b
+    [e1 v; 0 e2], G
+  else
+    bx = ( b - x ) / 2
+    root = hypot(da, bpx)
+    root = copysign(root, bx)
+    w = bx + root
+    v = disc / w
+    G, r = abs(b) >= abs(x) ? givens(w + x, da, i1, i2) : givens(da, w - b, i1, i2)
+    [ apd w; v apd], G
+  end
+end

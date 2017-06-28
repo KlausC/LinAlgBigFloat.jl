@@ -74,7 +74,10 @@ function prode1{T<:Real}(A::AbstractMatrix{T}, s::Vector, ilo::Integer)
       pe = A * pe - sr * pe
       j += 1
     else
-      pe = A * ( A * pe - 2sr * pe) + ( hypot(sr, si) ^ 2 ) * pe
+      sr = 2sr
+      s2 = abs2(s[k])
+      pe = A * ( A * pe - sr * pe) + s2 * pe
+
       if k < length(s) && imag(s[k+1]) == -si
         k += 1
       end
@@ -82,6 +85,7 @@ function prode1{T<:Real}(A::AbstractMatrix{T}, s::Vector, ilo::Integer)
     end
     k += 1
   end
+  pe[1:ilo-1] = 0
   pe
 end
 
@@ -138,9 +142,10 @@ end
 Chase all bulges towards right lower corner
 """
 function chase!(A, ilo::Integer, ihi::Integer, Q, maxchase::Integer, iwindow::Integer)
-  n1, n2 = size(A)
-  n2 = min(ihi, n2)
-  n1 = min(ihi, n1)
+  m1, m2 = size(A)
+  n2 = min(ihi, m2)
+  n1 = min(ihi, m1)
+
   m = i0 = n2 - 1 # column to start with
 
   while i0 >= ilo && m > 0
@@ -149,14 +154,37 @@ function chase!(A, ilo::Integer, ihi::Integer, Q, maxchase::Integer, iwindow::In
     if m > 0
       i1 = i0 + m > ihi -iwindow ? n2 - 2 : min(i0 + maxchase - 1, n2 - 2)
       for  i = i0:min(i0 + maxchase - 1, n2 - 2)
+        r = A[i+1,i]
         for k = min(i+m+1,n1):-1:i+2
-          if A[k,i] != 0
-            G, r = givens(A, k-1, k, i)
-            A_mul_B!(G, A)
-            A_mul_Bc!(A, G)
-            A_mul_Bc!(Q, G)
-            A[k-1,i] = r
+          aki = A[k,i]   
+          if aki != 0
+            rp = hypot(r, aki)
+            c = r / rp
+            s = aki / rp
+            A[i+1,i] = r = rp
             A[k,i] = 0
+            for l = i+1:m2
+              A[i+1,l], A[k,l] = A[i+1,l] * c' + A[k,l] * s', A[k,l] * c - A[i+1,l] * s
+            end
+            for l = 1:m1
+              A[l,i+1], A[l,k] = A[l,i+1] * c + A[l,k] * s, A[l,k] * c' - A[l,i+1] * s'
+            end
+            for l = 1:m1
+              Q[l,i+1], Q[l,k] = Q[l,i+1] * c + Q[l,k] * s, Q[l,k] * c' - Q[l,i+1] * s'
+            end
+          elseif r != 0
+            rp = abs(r)
+            c = r / rp
+            A[i+1,i] = r = rp
+            for l = i+1:m2
+              A[i+1,l] *= c'; A[k,l] *= c
+            end
+            for l = 1:m1
+              A[l,i+1] *= c; A[l,k] *= c'
+            end
+            for l = 1:m1
+              Q[l,i+1] = Q[l,i+1] * c; Q[l,k] = Q[l,k] * c'
+            end
           end
         end
       end
@@ -164,6 +192,15 @@ function chase!(A, ilo::Integer, ihi::Integer, Q, maxchase::Integer, iwindow::In
   end
   A, Q
 end
+
+@inline function givens_improved(A::AbstractMatrix{T}, i1::Int, i2::Int, j::Int) where T<:Number
+  rcs = Vector{T}(3)
+  rcs[1] = hypot(A[i1,j], A[i2,j])
+  rcs[2] = A[i1,j] / rcs[1]
+  rcs[3] = A[i2,j] / rcs[1]
+  rcs
+end
+
 
 """
 Find last bulge start column and size. Start search in column i.

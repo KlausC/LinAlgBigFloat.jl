@@ -10,7 +10,7 @@ immutable Schur{Ty<:BigFloatOrComplex, S<:AbstractMatrix} <: Factorization{Ty}
     T::S
     Z::S
     values::Vector
-    Schur(T::AbstractMatrix{Ty}, Z::AbstractMatrix{Ty}, values::Vector) = new(T, Z, values)
+    Schur{Ty,S}(T::AbstractMatrix{Ty}, Z::AbstractMatrix{Ty}, values::Vector) where {Ty,S} = new(T, Z, values)
 end
 
 function Schur{Ty}(T::AbstractMatrix{Ty}, Z::AbstractMatrix{Ty}, values::Vector)
@@ -39,6 +39,7 @@ function schurfact!{T<:BigFloatOrComplex}(A::StridedMatrix{T})
   A = HF[:H]
   separate!(A, 1, n, Q, processPart!)
   eigv = seigendiag(A, 1, size(A, 1))
+  finish!(A, Q)
   Schur(A, Q, eigv)
 end
 

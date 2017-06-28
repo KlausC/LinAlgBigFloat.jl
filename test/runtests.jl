@@ -1,5 +1,7 @@
 using LinAlgBigFloat
 using Base.Test
 
-# write your own tests here
-@test 1 == 2
+include("testutils.jl")
+
+include("schurbf.jl")
+0
