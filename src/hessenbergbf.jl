@@ -15,8 +15,6 @@ include("separate.jl")
 include("deflationcrit.jl")
 include("transformhess.jl")
 
-BigFloatOrComplex = Union{Complex{BigFloat}, BigFloat}
-
 function Hessenberg{T<:BigFloatOrComplex}(A::StridedMatrix{T})
   Hessenberg(gehrd!(A)...)
 end

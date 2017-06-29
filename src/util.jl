@@ -4,6 +4,7 @@ import Base: getindex, setindex!
 
 type Dummy end
 AbstractM  = Union{AbstractMatrix, LinAlg.AbstractRotation, Dummy}
+BigFloatOrComplex = Union{Complex{BigFloat}, BigFloat}
 
 """
 Add missing multiplication to LinAlg.Rotation
