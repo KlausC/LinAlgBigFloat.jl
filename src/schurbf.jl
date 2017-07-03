@@ -43,6 +43,24 @@ function schurfact!{T<:BigFloatOrComplex}(A::StridedMatrix{T})
   Schur(A, Q, eigv)
 end
 
+function nonhessenberg(A::AbstractMatrix)
+  n, m = size(A)
+  sum = 0.0
+  for i = 1:n
+    for j = 1:min(i-2,m-2)
+      sum += Float64(abs2(A[i,j]))
+    end
+  end
+  for i = 2:n
+    x = Float64(abs2(A[i,i-1]))
+    if eltype(A) <: Complex || x < 1e-10 
+      # bigger elements in subdiagonal are considered block
+      sum += x
+    end
+  end
+  sqrt(sum)
+end
+
 function processPart!{T<:BigFloatOrComplex}(A::StridedMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractMatrix)
   S = ifelse(T <: Real, Float64, Complex128)
   # 1. step: estimate eigenvalues in lower precision
