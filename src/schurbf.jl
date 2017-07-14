@@ -1,23 +1,21 @@
 
-include("refineprecision.jl")
-
 import Base.LinAlg.schurfact!
 import Base.getindex
 
 # Schur decomposition
 # redefine Base.LinAlg structure in order to support BigFloatOrComplex
-immutable Schur{Ty<:BigFloatOrComplex, S<:AbstractMatrix} <: Factorization{Ty}
+struct SchurBig{Ty<:BigFloatOrComplex, S<:AbstractMatrix} <: Factorization{Ty}
     T::S
     Z::S
     values::Vector
-    Schur{Ty,S}(T::AbstractMatrix{Ty}, Z::AbstractMatrix{Ty}, values::Vector) where {Ty,S} = new(T, Z, values)
+    SchurBig{Ty,S}(T::AbstractMatrix{Ty}, Z::AbstractMatrix{Ty}, values::Vector) where {Ty,S} = new(T, Z, values)
 end
 
-function Schur{Ty}(T::AbstractMatrix{Ty}, Z::AbstractMatrix{Ty}, values::Vector)
-  Schur{Ty, typeof(T)}(T, Z, values)
+function SchurBig{Ty}(T::AbstractMatrix{Ty}, Z::AbstractMatrix{Ty}, values::Vector)
+  SchurBig{Ty, typeof(T)}(T, Z, values)
 end
 
-function getindex(F::Schur, sym::Symbol)
+function getindex(F::SchurBig, sym::Symbol)
 
   if sym == :T || sym == :Schur
     F.T
@@ -40,7 +38,7 @@ function schurfact!{T<:BigFloatOrComplex}(A::StridedMatrix{T})
   separate!(A, 1, n, Q, processPart!)
   eigv = seigendiag(A, 1, size(A, 1))
   finish!(A, Q)
-  Schur(A, Q, eigv)
+  SchurBig(A, Q, eigv)
 end
 
 function nonhessenberg(A::AbstractMatrix)

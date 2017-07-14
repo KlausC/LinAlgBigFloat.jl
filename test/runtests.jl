@@ -1,7 +1,8 @@
 using LinAlgBigFloat
 using Base.Test
 
-include("testutils.jl")
+@time @testset "Utils" begin include("utils_test.jl") end
+# @time @testset "Schur BigFloat" begin include("schurbf_test.jl") end
+@time @testset "VectorSpaces" begin include("spaces_test.jl") end
 
-include("schurbf.jl")
 0

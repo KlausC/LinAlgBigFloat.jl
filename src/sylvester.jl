@@ -1,6 +1,4 @@
 
-include("util.jl")
-
 using Base.LinAlg
 
 import Base.LinAlg: sylvester, lyap

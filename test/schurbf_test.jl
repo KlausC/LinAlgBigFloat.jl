@@ -17,7 +17,7 @@ setprecision(BigFloat, 512) do
     @test checkfactors(AB, Q, A, rtol = eps(T) * n * n)
   end
 
-  @testset "schurfact $n" for n in (1, 2, 3, 4, 5, 9, 20, 49)
+  @testset "schurfact $n" for n in (1, 2, 3, 4, 5, 9, 20)
     AB = BigFloat.(randn(n, n))
     HF = hessfact(AB)
     @test checkfactors(AB, HF[:Q], HF[:H]) rtol = eps(T) * n * 2

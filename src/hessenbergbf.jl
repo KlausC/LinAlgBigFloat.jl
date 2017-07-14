@@ -10,11 +10,6 @@ import Base.LinAlg: chkstride1, checksquare
 import Base.LinAlg: reflector!, reflectorApply!
 import Base.LinAlg.LAPACK: gehrd!
 
-include("util.jl")
-include("separate.jl")
-include("deflationcrit.jl")
-include("transformhess.jl")
-
 function Hessenberg{T<:BigFloatOrComplex}(A::StridedMatrix{T})
   Hessenberg(gehrd!(A)...)
 end

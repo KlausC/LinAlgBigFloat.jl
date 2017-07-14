@@ -11,4 +11,3 @@ function checkfactors{T1<:Number, T2<:Number, T3<:Number}(A::AbstractMatrix{T1},
   res <= rtol * norm(A, 1) + atol
 end
 
-
