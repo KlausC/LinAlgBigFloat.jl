@@ -6,7 +6,7 @@ shifts is a vector of shift values.
 With each shift value, its conjugate complex value is implicitly used as shift
 All shift values should be distinct.
 """
-function transform_Hess!{T<:Union{Real,Complex}, S<:Union{Real,Complex}}(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractM, s::Vector{S}, maxchase::Integer, iwindow::Integer)
+function transform_Hess!(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractM, s::Vector{S}, maxchase::Integer, iwindow::Integer) where {T<:Union{Real,Complex}, S<:Union{Real,Complex}}
 
   !isa(Q, AbstractMatrix) || size(A, 2) == size(Q, 2) || error("A and Q have incompatible sizes")
 
@@ -49,20 +49,20 @@ function transform_Hess!{T<:Union{Real,Complex}, S<:Union{Real,Complex}}(A::Abst
   ilo, ihi, Q
 end
 
-function transform_Hess!{T<:Real, S<:Union{Real,Complex}}(A::AbstractMatrix{T}, Q::AbstractM, s::Vector{S}, maxchase::Integer, iwindow::Integer = 0)
+function transform_Hess!(A::AbstractMatrix{T}, Q::AbstractM, s::Vector{S}, maxchase::Integer, iwindow::Integer = 0) where {T<:Real, S<:Union{Real,Complex}}
 
   transform_Hess!(A, 1, size(A, 1), Q, s, maxchase, iwindow)
 end
 
-function transform_Hess!{T<:Real, S<:Union{Real,Complex}}(A::AbstractMatrix{T}, s::Vector{S}, maxchase::Integer, iwindow::Integer = 0)
+function transform_Hess!(A::AbstractMatrix{T}, s::Vector{S}, maxchase::Integer, iwindow::Integer = 0) where {T<:Real, S<:Union{Real,Complex}}
 
-  #Q = LinAlg.Rotation(LinAlg.Givens{T}[])
-  Q = eye(T, size(A, 2))
+  #Q = LinearAlgebra.Rotation(LinearAlgebra.Givens{T}[])
+  Q = Matrix{T}(I, size(A, 2), size(A, 2))
   transform_Hess!(A, Q, s, maxchase, iwindow)
 end
 
 # calculate product over k of (A - s[k]*I) * e1
-function prode1{T<:Real}(A::AbstractMatrix{T}, s::Vector, ilo::Integer)
+function prode1(A::AbstractMatrix{T}, s::Vector, ilo::Integer) where {T<:Real}
   n = size(A, 1)
   pe = zeros(T, n)
   pe[ilo] = one(T)
@@ -89,7 +89,7 @@ function prode1{T<:Real}(A::AbstractMatrix{T}, s::Vector, ilo::Integer)
   pe
 end
 
-function prode1{T<:Complex}(A::AbstractMatrix{T}, s::Vector, ilo::Integer)
+function prode1(A::AbstractMatrix{T}, s::Vector, ilo::Integer) where {T<:Complex}
   n = size(A, 1)
   pe = zeros(T, n)
   pe[ilo] = one(T)
@@ -116,8 +116,7 @@ end
 Count number of eigenvalues.
 Each non-real eigenvalue is counted twice, if not paired with its conjugate.
 """
-counteigs{T<:Real}(s::Vector{T}) = length(s)
-function counteigs{T}(s::Vector{Complex{T}})
+function counteig(s::Vector{Complex{T}}) where T
   z = zero(T)
   m = length(s)
   count = 0
@@ -205,7 +204,7 @@ end
 """
 Find last bulge start column and size. Start search in column i.
 """
-function lastbulge{T<:Number}(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer, i::Integer)
+function lastbulge(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer, i::Integer) where {T<:Number}
   n, m = size(A)
   n == m || error("need square matrix")
   #i <= n - 1 || error("column number must be less than n")

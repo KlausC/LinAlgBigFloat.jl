@@ -1,5 +1,5 @@
 
-srand(1)
+Random.seed!(1)
 
 
 
@@ -10,7 +10,7 @@ setprecision(BigFloat, 512) do
   @testset "transform_Hess $n" for n in (3, 4, 5)
     AB = BigFloat.(randn(n, n)) + BigFloat.(randn(n,n))*im
     A = copy(AB)
-    Q = Complex{BigFloat}.(eye(n,n))
+    Q = Complex{BigFloat}.(I(n))
     ev = eig(Complex128.(AB))[1]
     s = ev[n:n]
     LinAlgBigFloat.transform_Hess!(A, 1, n, Q, s, n, n)

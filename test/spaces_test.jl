@@ -1,7 +1,8 @@
 
 using LinAlgBigFloat.VectorSpaces
+using Random
 
-srand(1)
+Random.seed!(1)
 
 l, n, m = 2, 6, 4
 A = randn(n, m)

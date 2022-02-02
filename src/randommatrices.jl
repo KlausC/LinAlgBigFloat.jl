@@ -1,9 +1,11 @@
 module RandomMatrices
 
+using Random
+
 export unitvector, orthogonal, normal, general, symmetric, hermitian
 
-using Base.Random: GLOBAL_RNG
-using Base.LinAlg:  reflector!, QR
+using Random: GLOBAL_RNG
+using LinearAlgebra:  reflector!, QR
 
 import Base.randn, Base.rand
 
@@ -36,7 +38,7 @@ function unitvector!(v::Union{AbstractVector{T},AbstractVector{Complex{T}}}, rng
 end
 
 """
-  orthogonal(m, n, ::Type{T}=Float64 [, rng::AbstractRNG]) -> LinAlg.QRCompactWYQ
+  orthogonal(m, n, ::Type{T}=Float64 [, rng::AbstractRNG]) -> LinearAlgebra.QRCompactWYQ
 
 Generate random orthogonal real or unitary complex matrix.
 """
@@ -71,14 +73,11 @@ function rand(rng::AbstractRNG, ::Type{Complex{T}}) where T<:AbstractFloat
   end
   complex(a, b)
 end
-function randn(rng::AbstractRNG, ::Type{Complex{T}}) where T<:AbstractFloat
-  complex(randn(rng, T), randn(rng, T))
-end
 
 """
 Append random bits in BigFloat representation of input small float number.
 """
-function bigFloat_randfill{T<:Union{Float64,Float32,Float16}}(rng::AbstractRNG, a::T)
+function bigFloat_randfill(rng::AbstractRNG, a::T) where {T<:Union{Float64,Float32,Float16}}
   missing = precision(BigFloat) - precision(a)
   bigi = BigInt(1) << missing
   add = ( rand(rng, BigInt(0):bigi-1) / bigi )

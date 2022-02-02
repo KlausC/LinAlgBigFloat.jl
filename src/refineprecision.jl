@@ -2,7 +2,7 @@
 """
 Refine Float64 to BigFloat precision.
 """
-function iterate!{T<:BigFloat}(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractM)
+function iterate!(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractM) where {T<:BigFloat}
 
   # approximation of submatrix eigenvalues in Float64 precision
   r = ilo:ihi
@@ -14,7 +14,7 @@ end
 """
 Refine all eigenvalues of a list close to estimation value
 """
-function refineprecision!{T<:Union{Real,Complex}}(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractM, ev::AbstractVector)
+function refineprecision!(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractM, ev::AbstractVector) where {T<:Union{Real,Complex}}
   
   realcase = T <: Real
   evr = reverse(ev)
@@ -36,7 +36,7 @@ end
 """
 Refine one eigenvalue close to estimation value
 """
-function refineprecision!{T<:Union{Real,Complex}}(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractM, ev::Number)
+function refineprecision!(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractM, ev::Number) where {T<:Union{Real,Complex}}
  
   ih2 = ! (T <: Real) || isreal(ev) ? ihi : ihi - 1
   r = ih2:ihi
@@ -54,7 +54,7 @@ end
 """
 Detect convergence of last eigenvalue block of hessenberg matrix.
 """
-function converged{T<:Union{Real,Complex}}(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer)
+function converged(A::AbstractMatrix{T}, ilo::Integer, ihi::Integer) where {T<:Union{Real,Complex}}
   if ilo >= ihi
     return true
   end

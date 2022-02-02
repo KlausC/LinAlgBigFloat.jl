@@ -1,12 +1,12 @@
 
 
-import Base.LinAlg.rank
+import LinearAlgebra.rank
 
 function rank(A::AbstractMatrix{T}) where T <: Number
   rank(qrfact(A, Val{true}))
 end
 
-function rank(QR::LinAlg.QRPivoted{T, S} ) where S <: AbstractMatrix{T} where T <: Number
+function rank(QR::LinearAlgebra.QRPivoted{T, S} ) where S <: AbstractMatrix{T} where T <: Number
   R = QR[:R]
   sv = sort(abs.(diag(R)), rev = true)
   tol = eps(sv[1]) * maximum(size(A))
@@ -27,9 +27,9 @@ function span(A::AbstractMatrix{T}) where T <: Number
   n, m = size(A)
   r = rank(QR)
   if r < n
-    QR[:Q][:,1:r]
+    QR.Q[:,1:r]
   else
-    eye(T, n, n)
+    Matrix{T}(I, n, n)
   end
 end
 

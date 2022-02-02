@@ -1,9 +1,9 @@
 
-import Base.LinAlg.schurfact!
+import LinearAlgebra.schurfact!
 import Base.getindex
 
 # Schur decomposition
-# redefine Base.LinAlg structure in order to support BigFloatOrComplex
+# redefine LinearAlgebra structure in order to support BigFloatOrComplex
 struct SchurBig{Ty<:BigFloatOrComplex, S<:AbstractMatrix} <: Factorization{Ty}
     T::S
     Z::S
@@ -11,7 +11,7 @@ struct SchurBig{Ty<:BigFloatOrComplex, S<:AbstractMatrix} <: Factorization{Ty}
     SchurBig{Ty,S}(T::AbstractMatrix{Ty}, Z::AbstractMatrix{Ty}, values::Vector) where {Ty,S} = new(T, Z, values)
 end
 
-function SchurBig{Ty}(T::AbstractMatrix{Ty}, Z::AbstractMatrix{Ty}, values::Vector)
+function SchurBig(T::AbstractMatrix{Ty}, Z::AbstractMatrix{Ty}, values::Vector) where {Ty}
   SchurBig{Ty, typeof(T)}(T, Z, values)
 end
 
@@ -28,7 +28,7 @@ function getindex(F::SchurBig, sym::Symbol)
   end
 end
 
-function schurfact!{T<:BigFloatOrComplex}(A::StridedMatrix{T})
+function schurfact!(A::StridedMatrix{T}) where {T<:BigFloatOrComplex}
   chkstride1(A)
   n = checksquare(A)
   # transform to Hessenberg form
@@ -59,7 +59,7 @@ function nonhessenberg(A::AbstractMatrix)
   sqrt(sum)
 end
 
-function processPart!{T<:BigFloatOrComplex}(A::StridedMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractMatrix)
+function processPart!(A::StridedMatrix{T}, ilo::Integer, ihi::Integer, Q::AbstractMatrix) where {T<:BigFloatOrComplex}
   S = ifelse(T <: Real, Float64, Complex128)
   # 1. step: estimate eigenvalues in lower precision
   F = schurfact!(S.(view(A, ilo:ihi, ilo:ihi)))

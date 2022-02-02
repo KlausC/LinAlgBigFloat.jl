@@ -3,18 +3,20 @@ module VectorSpaces
 
 export VectorSpace, ZeroSpace, dim, span, span_transposed, kernel, image, preimage
 
-using Base.LinAlg
+using LinearAlgebra
 using LinAlgBigFloat
 
-import Base: show, size, copy, ctranspose, union, intersect, in, issubset, (==), (*), (\)
-import Base.LinAlg: rank
+export rank
+
+import Base: show, size, copy, adjoint, union, intersect, in, issubset, (==), (*), (\)
+import LinearAlgebra: rank
 
 mutable struct VectorSpace{T<:Number,S<:AbstractMatrix}
   n::Int
   rank::Int
   first::Int
-  qrf::Union{QRPivoted{T, S},Void}
-  VectorSpace{T,S}(n::Int, rank::Int, first::Int, qrf::Union{QRPivoted{T,S},Void}) where {T,S<:AbstractMatrix} = new(n, rank, first, qrf)
+  qrf::Union{QRPivoted{T, S},Nothing}
+  VectorSpace{T,S}(n::Int, rank::Int, first::Int, qrf::Union{QRPivoted{T,S},Nothing}) where {T,S<:AbstractMatrix} = new(n, rank, first, qrf)
 end
 
 function show(io::IO, vs::VectorSpace)
@@ -34,7 +36,7 @@ function VectorSpace(A::AbstractMatrix{T}) where T <: Number
   r = 0
   if m > 0
     tol = tolerance(A)
-    qrf = qrfact(A, Val{true})
+    qrf = qr(A, ColumnNorm())
     r = rank(qrf, tol)
   end
   if r <= 0 || r >= n
@@ -71,11 +73,11 @@ copy(vs::VectorSpace{T,S}) where {T, S} =
 
 """
 
-  `ctranspose(vs::VectorSpace) -> VectorSpace`
+  `adjoint(vs::VectorSpace) -> VectorSpace`
 
   Create VectorSpace representing the orthogonal complement of `vs`.
 """
-function ctranspose(vs::VectorSpace{T,S}) where {T,S}
+function adjoint(vs::VectorSpace{T,S}) where {T,S}
   n, r = size(vs)
   if vs.first == 1
     f = r + 1
@@ -95,9 +97,9 @@ end
 function span(vs::VectorSpace{T}) where T
   if 0 < vs.rank < vs.n
     r = _range1(vs)
-    vs.qrf[:Q][:,r]
+    vs.qrf.Q[:,r]
   else
-    eye(T, vs.n, vs.rank)
+    Matrix{T}(I, vs.n, vs.rank)
   end
 end
 
@@ -111,9 +113,9 @@ end
 function span_transposed(vs::VectorSpace{T}) where T
   if 0 < vs.rank < vs.n
     r = _range2(vs)
-    vs.qrf[:Q][:,r]
+    vs.qrf.Q[:,r]
   else
-    eye(T, vs.n, vs.n - vs.rank)
+    Matrix{T}(I, vs.n, vs.n - vs.rank)
   end
 end
 
@@ -159,11 +161,11 @@ function *(A::AbstractMatrix{T}, vs::VectorSpace{T}) where T <: Number
 end
 
 """
-  `\(A::AbstractMatrix, vs::VectorSpace) -> VectorSpace`
+  `\\(A::AbstractMatrix, vs::VectorSpace) -> VectorSpace`
 
   Calculate the preimage of the vector space `vs` under matrix `A`.
   Discard small row vectors in `span(vs')' * A`.
-  Use `A \ vs` rather than `VectorSpace(span(vs')'A)` for accuracy.
+  Use `A \\ vs` rather than `VectorSpace(span(vs')'A)` for accuracy.
 """
 function \(A::AbstractMatrix{T}, vs::VectorSpace{T}) where T <: Number
   n, m = size(A)
@@ -383,9 +385,9 @@ function rank(A::AbstractMatrix{T}) where T <: Number
   rank(qrfact(A, Val{true}), tol)
 end
 
-function rank(QR::LinAlg.QRPivoted{T, S}, tol::AbstractFloat) where S <: AbstractMatrix{T} where T <: Number
+function rank(QR::LinearAlgebra.QRPivoted{T, S}, tol::AbstractFloat) where S <: AbstractMatrix{T} where T <: Number
   minimum(size(QR)) == 0 && ( return 0 )
-  R = QR[:R]
+  R = QR.R
   sv = sort(abs.(diag(R)), rev = true)
   n = length(sv)
   while n > 0 && sv[n] <= tol
@@ -412,7 +414,7 @@ If the matrix has rank zero, the unit matrix is returned.
 function kernel_matrix(A::AbstractMatrix{T}) where T <: Number
 
   tol = tolerance(A)
-  QR = qrfact(A, Val{true})
+  QR = qr(A, ColumnNorm())
   r = rank(QR, tol)
   n, m = size(A)
   K = zeros(T, m, m - r)

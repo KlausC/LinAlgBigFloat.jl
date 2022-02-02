@@ -2,13 +2,13 @@
 # reimplements methods: hessfact, hessfact!
 # and minor functions from LinAlg: full, A_mul_B! ..., reflectorApply! 
 
-import Base.LinAlg
+import LinearAlgebra
 import Base: A_mul_B!, Ac_mul_B!, A_mul_Bc!, copymutable, full
-import Base.LinAlg: hessfact, hessfact!, Hessenberg, HessenbergQ
-import Base.LinAlg: chkstride1, checksquare
+import LinearAlgebra: hessfact, hessfact!, Hessenberg, HessenbergQ
+import LinearAlgebra: chkstride1, checksquare
 
-import Base.LinAlg: reflector!, reflectorApply!
-import Base.LinAlg.LAPACK: gehrd!
+import LinearAlgebra: reflector!, reflectorApply!
+import LinearAlgebra.LAPACK: gehrd!
 
 function Hessenberg{T<:BigFloatOrComplex}(A::StridedMatrix{T})
   Hessenberg(gehrd!(A)...)
@@ -73,7 +73,7 @@ function reflectorApply!(A::StridedMatrix, x::AbstractVector, τ::Number)
 end
 
 # various multiplications with HessenbergQ
-# note the ctranspose(τ[k]) - supports the case of complex τ!
+# note the adjoint(τ[k]) - supports the case of complex τ!
 function A_mul_B!{T<:BigFloatOrComplex}(HQ::HessenbergQ{T}, A::StridedVecOrMat{T})
   n = size(A, 1)
   τ = HQ.τ
